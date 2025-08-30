@@ -7,8 +7,7 @@
 var canvas;
 var gl;
 
-// numCirclePoints er fjöldi punkta á hringnum
-// Heildarfjöldi punkta er tveimur meiri (miðpunktur + fyrsti punktur kemur tvisvar)
+
 var numCirclePoints = 20;       
 
 var radius = 0.5;
@@ -26,17 +25,13 @@ window.onload = function init() {
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
-    //
-    //  Load shaders and initialize attribute buffers
-    //
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
         document.getElementById("slider").onchange = function(event) {
         numCirclePoints = parseInt(event.target.value);
         };
-    
-	// Create the circle
+
     createCirclePoints( center, radius, numCirclePoints );
 
     var vBuffer = gl.createBuffer();
@@ -58,7 +53,6 @@ window.onload = function init() {
 }
 
 
-// Create the points of the circle
 function createCirclePoints( cent, rad, k )
 {
     points = [];
@@ -75,7 +69,6 @@ function createCirclePoints( cent, rad, k )
 function render() {
     
     gl.clear( gl.COLOR_BUFFER_BIT );
-    
-    // Draw circle using Triangle Fan
+
     gl.drawArrays( gl.TRIANGLE_FAN, 0, numCirclePoints+2 );
 }

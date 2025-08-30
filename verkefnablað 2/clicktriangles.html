@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <title>Click-to-draw Triangles</title>
     
-    <!-- Vertex Shader -->
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition;
         void main() {
@@ -12,7 +11,6 @@
         }
     </script>
 
-    <!-- Fragment Shader -->
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         void main() {
@@ -20,12 +18,9 @@
         }
     </script>
 
-    <!-- Common WebGL helper scripts -->
     <script type="text/javascript" src="../Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/MV.js"></script>
-
-    <!-- Our program -->
     <script src="clicktriangles.js"></script>
 </head>
 <body>

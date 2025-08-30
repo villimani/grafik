@@ -3,7 +3,7 @@
 var canvas;
 var gl;
 var points = [];
-var NumTimesToSubdivide = 4;  // adjust for more/less detail
+var NumTimesToSubdivide = 3; 
 
 window.onload = function init() {
     canvas = document.getElementById("gl-canvas");
@@ -11,17 +11,15 @@ window.onload = function init() {
     gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) { alert("WebGL isn't available"); }
 
-    // Initial square corners
     var vertices = [
-        vec2(-1,  1),  // top-left
-        vec2( 1,  1),  // top-right
-        vec2( 1, -1),  // bottom-right
-        vec2(-1, -1)   // bottom-left
+        vec2(-1,  1),  
+        vec2( 1,  1), 
+        vec2( 1, -1), 
+        vec2(-1, -1)   
     ];
 
     divideSquare(vertices[0], vertices[1], vertices[2], vertices[3], NumTimesToSubdivide);
 
-    // Configure WebGL
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -39,13 +37,11 @@ window.onload = function init() {
     render();
 };
 
-// Draw square as 2 triangles
 function square(a, b, c, d) {
     points.push(a, b, d);
     points.push(b, c, d);
 }
 
-// Recursive subdivision
 function divideSquare(a, b, c, d, count) {
     if (count === 0) {
         square(a, b, c, d);
@@ -53,10 +49,9 @@ function divideSquare(a, b, c, d, count) {
         var dx = (b[0] - a[0]) / 3.0;
         var dy = (a[1] - d[1]) / 3.0;
 
-        // Compute 9 squares, skip center
         for (var i = 0; i < 3; i++) {
             for (var j = 0; j < 3; j++) {
-                if (i === 1 && j === 1) continue; // skip center
+                if (i === 1 && j === 1) continue; 
                 var newA = vec2(a[0] + i*dx, a[1] - j*dy);
                 var newB = vec2(a[0] + (i+1)*dx, a[1] - j*dy);
                 var newC = vec2(a[0] + (i+1)*dx, a[1] - (j+1)*dy);
