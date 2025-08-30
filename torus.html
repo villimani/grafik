@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Simple 3D Torus</title>
+<script src="../Common/webgl-utils.js"></script>
+<script src="../Common/initShaders.js"></script>
+<script src="../Common/MV.js"></script>
+</head>
+<body>
+<canvas id="gl-canvas" width="512" height="512"></canvas>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec3 vPosition;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+void main() {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+void main() {
+    gl_FragColor = vec4(0.2, 0.6, 1.0, 1.0); // simple blue
+}
+</script>
+
+<script type="text/javascript">
+"use strict";
+
+var gl;
+var points = [];
+var indices = [];
+
+var N = 35, M = 30;   // torus resolution
+var R = 0.6, r = 0.2; // big radius, small radius
+
+window.onload = function init() {
+    var canvas = document.getElementById("gl-canvas");
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) alert("WebGL isn't available");
+
+    // Create torus points
+    for (var i=0;i<=N;i++) {
+        var theta = i*2*Math.PI/N;
+        for (var j=0;j<=M;j++) {
+            var phi = j*2*Math.PI/M;
+            var x = (R + r*Math.cos(phi)) * Math.cos(theta);
+            var y = (R + r*Math.cos(phi)) * Math.sin(theta);
+            var z = r*Math.sin(phi);
+            points.push(vec3(x,y,z));
+        }
+    }
+
+    // Create triangle indices
+    for (var i=0;i<N;i++) {
+        for (var j=0;j<M;j++) {
+            var first = i*(M+1)+j;
+            var second = first + M + 1;
+            indices.push(first, second, first+1);
+            indices.push(second, second+1, first+1);
+        }
+    }
+
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.clearColor(1.0,1.0,1.0,1.0);
+    gl.enable(gl.DEPTH_TEST);
+
+    var program = initShaders(gl,"vertex-shader","fragment-shader");
+    gl.useProgram(program);
+
+    // Vertex buffer
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER,flatten(points),gl.STATIC_DRAW);
+
+    var vPosition = gl.getAttribLocation(program,"vPosition");
+    gl.vertexAttribPointer(vPosition,3,gl.FLOAT,false,0,0);
+    gl.enableVertexAttribArray(vPosition);
+
+    // Index buffer
+    var iBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
+
+    // Simple camera
+    var modelViewMatrix = lookAt(vec3(1.5,1.5,1.5), vec3(0,0,0), vec3(0,0,1));
+    var projectionMatrix = perspective(45, 1.0, 0.1, 10.0);
+
+    var modelViewLoc = gl.getUniformLocation(program,"modelViewMatrix");
+    gl.uniformMatrix4fv(modelViewLoc,false,flatten(modelViewMatrix));
+
+    var projLoc = gl.getUniformLocation(program,"projectionMatrix");
+    gl.uniformMatrix4fv(projLoc,false,flatten(projectionMatrix));
+
+    render();
+};
+
+function render() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+}
+</script>
+</body>
+</html>
