@@ -1,9 +1,9 @@
 // Road settings
-var roadRows = 5;
-var rowHeight = 0.4;     // slightly thinner rows
-var lineHeight = 0.02;    // height of the white lane marking
-var dashWidth = 0.1;      // width of each dash
-var dashGap = 0.05;       // gap between dashes
+var roadRows = 7;          // now 7 rows
+var rowHeight = 2.0 / roadRows;  // evenly divide screen height
+var lineHeight = 0.02;     // height of the white lane marking
+var dashWidth = 0.1;       // width of each dash
+var dashGap = 0.05;        // gap between dashes
 
 var rowBuffers = [];
 var rowColors = [];
@@ -30,8 +30,8 @@ function initRoad(gl) {
         rowBuffers.push(buf);
 
         var color = (i === 0 || i === roadRows - 1)
-            ? vec4(0.55, 0.27, 0.07, 1.0) 
-            : vec4(0.6, 0.6, 0.6, 1.0);   
+            ? vec4(0.55, 0.27, 0.07, 1.0)  // brown for edges
+            : vec4(0.6, 0.6, 0.6, 1.0);   // gray for road lanes
         rowColors.push(color);
 
         if (i > 0 && i < roadRows - 1) {

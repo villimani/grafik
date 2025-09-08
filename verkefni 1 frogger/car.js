@@ -4,8 +4,16 @@ var carVertices = [];
 var carPositions = [];
 var carSpeeds = [];
 var carLanes = [];
-var carColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue cars
+var carColors = [];
 var secondCarCount = 0;
+
+// 4 preset car colors (as arrays, not vec4 objects)
+const carPalette = [
+    [0.0, 0.0, 1.0, 1.0],   // blue
+    [1.0, 0.0, 0.0, 1.0],   // red
+    [1.0, 0.84, 0.0, 1.0],  // yellow
+    [0.0, 0.6, 0.0, 1.0]    // green
+];
 
 function initCars(gl) {
     carBuffers = [];
@@ -13,71 +21,60 @@ function initCars(gl) {
     carPositions = [];
     carSpeeds = [];
     carLanes = [];
+    carColors = [];
     secondCarCount = 0;
 
-    // Assign a speed per lane first
     const laneSpeeds = [];
-    const laneDirections = [];
     for (let i = 1; i < roadRows - 1; i++) {
-        laneSpeeds[i] = 0.006 + Math.random() * 0.01; // speed
-        laneDirections[i] = (i % 2 === 0) ? 1 : -1; // even lanes → right, odd → left
+        laneSpeeds[i] = (Math.random() < 0.5 ? -1 : 1) * (0.005 + Math.random() * 0.008);
     }
 
     for (let i = 1; i < roadRows - 1; i++) {
         const y0 = -1.0 + i * rowHeight + 0.05;
         const y1 = y0 + rowHeight - lineHeight - 0.05;
 
-        const dir = laneDirections[i];
+        let lastColorIndex = -1;
 
-        // Main car
-        let vertsMain;
-        if (dir === 1) { // right
-            vertsMain = [
-                vec2(0.5, y0), vec2(1.0, y0), vec2(1.0, y1-0.05),
-                vec2(0.5, y0), vec2(1.0, y1-0.05), vec2(0.5, y1-0.05)
-            ];
-        } else { // left
-            vertsMain = [
+        function getRandomColor() {
+            let index;
+            do { index = Math.floor(Math.random() * carPalette.length); }
+            while (index === lastColorIndex);
+            lastColorIndex = index;
+            return carPalette[index];
+        }
+
+        // Right/left moving car
+        const verts1 = [
+            vec2(0.5, y0), vec2(1.0, y0), vec2(1.0, y1-0.05),
+            vec2(0.5, y0), vec2(1.0, y1-0.05), vec2(0.5, y1-0.05)
+        ];
+        carVertices.push(verts1);
+        carLanes.push(i);
+        carPositions.push([0.0, 0.0]);
+        carSpeeds.push(laneSpeeds[i]);
+        carColors.push(getRandomColor());
+
+        const buf1 = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf1);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(verts1), gl.STATIC_DRAW);
+        carBuffers.push(buf1);
+
+        // Optional second car
+        if (secondCarCount < 2 && Math.random() < 0.5) {
+            const verts2 = [
                 vec2(-1.0, y0), vec2(-0.5, y0), vec2(-0.5, y1-0.05),
                 vec2(-1.0, y0), vec2(-0.5, y1-0.05), vec2(-1.0, y1-0.05)
             ];
-        }
-
-        carVertices.push(vertsMain);
-        carLanes.push(i);
-        carPositions.push([0.0, 0.0]);
-        carSpeeds.push(laneSpeeds[i] * dir);
-
-        const bufMain = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufMain);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(vertsMain), gl.STATIC_DRAW);
-        carBuffers.push(bufMain);
-
-        // Optional second car (max 2)
-        if (secondCarCount < 2 && Math.random() < 0.5) {
-            let vertsSecond;
-            if (dir === 1) { // right
-                vertsSecond = [
-                    vec2(-1.0, y0), vec2(-0.5, y0), vec2(-0.5, y1-0.05),
-                    vec2(-1.0, y0), vec2(-0.5, y1-0.05), vec2(-1.0, y1-0.05)
-                ];
-            } else { // left
-                vertsSecond = [
-                    vec2(0.5, y0), vec2(1.0, y0), vec2(1.0, y1-0.05),
-                    vec2(0.5, y0), vec2(1.0, y1-0.05), vec2(0.5, y1-0.05)
-                ];
-            }
-
-            carVertices.push(vertsSecond);
+            carVertices.push(verts2);
             carLanes.push(i);
             carPositions.push([0.0, 0.0]);
-            carSpeeds.push(laneSpeeds[i] * dir);
+            carSpeeds.push(laneSpeeds[i]);
+            carColors.push(getRandomColor());
 
-            const bufSecond = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, bufSecond);
-            gl.bufferData(gl.ARRAY_BUFFER, flatten(vertsSecond), gl.STATIC_DRAW);
-            carBuffers.push(bufSecond);
-
+            const buf2 = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf2);
+            gl.bufferData(gl.ARRAY_BUFFER, flatten(verts2), gl.STATIC_DRAW);
+            carBuffers.push(buf2);
             secondCarCount++;
         }
     }
@@ -85,21 +82,20 @@ function initCars(gl) {
 
 // Draw and move cars
 function drawCars(gl, vPosition, locColor, locOffset, locAngle) {
-    gl.uniform1f(locAngle, 0.0); // cars do not rotate
+    gl.uniform1f(locAngle, 0.0);
 
     for (let i = 0; i < carBuffers.length; i++) {
         carPositions[i][0] += carSpeeds[i];
 
-        // Loop cars
-        if (carSpeeds[i] > 0 && carPositions[i][0] > 2) carPositions[i][0] = -2;
-        if (carSpeeds[i] < 0 && carPositions[i][0] < -2) carPositions[i][0] = 2;
+        if (carPositions[i][0] > 2) carPositions[i][0] = -2;
+        if (carPositions[i][0] < -2) carPositions[i][0] = 2;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, carBuffers[i]);
         gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vPosition);
 
         gl.uniform2fv(locOffset, flatten(carPositions[i]));
-        gl.uniform4fv(locColor, flatten(carColor));
+        gl.uniform4fv(locColor, flatten(carColors[i]));
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 }

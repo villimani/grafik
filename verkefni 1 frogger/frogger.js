@@ -1,30 +1,6 @@
 var gl;
-var color = vec4(0.07, 0.63, 0.19, 1.0); // frog green
 var locColor, locOffset, locAngle;
 var vPosition;
-
-var frogBuffer, eyeBuffer;
-var currentOffset = vec2(0.0, -0.8);
-var targetOffset = vec2(0.0, -0.8);
-var angle = 0.0;
-
-var vertices = [
-    vec2(-0.16, -0.16),
-    vec2(0.0, 0.16),
-    vec2(0.16, -0.16)
-];
-
-var eyeVertices = [
-    vec2(-0.06, 0.05),
-    vec2(0.06, 0.05)
-];
-
-var minX = -0.16, maxX = 0.16, minY = -0.16, maxY = 0.16;
-var gridStepY = 0.4;
-var gridStepX = 0.2;
-var moveDuration = 200;
-var moveStartTime = 0;
-var isMoving = false;
 
 window.onload = function init() {
     const canvas = document.getElementById("gl-canvas");
@@ -38,28 +14,15 @@ window.onload = function init() {
     gl.useProgram(program);
 
     vPosition = gl.getAttribLocation(program, "vPosition");
-
-    // Frog buffer
-    frogBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, frogBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
-
-    // Eyes
-    eyeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, eyeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(eyeVertices), gl.STATIC_DRAW);
-
     locColor = gl.getUniformLocation(program, "rcolor");
     locOffset = gl.getUniformLocation(program, "uOffset");
     locAngle = gl.getUniformLocation(program, "uAngle");
 
-    gl.uniform4fv(locColor, flatten(color));
-    gl.uniform2fv(locOffset, flatten(currentOffset));
-    gl.uniform1f(locAngle, angle);
-
+    initFrog(gl);
     initRoad(gl);
     initCars(gl);
 
+    // Controls
     window.addEventListener("keydown", function(e) {
         if (isMoving) return;
 
@@ -91,7 +54,7 @@ window.onload = function init() {
     render();
 };
 
-// SAT-based collision detection helpers
+// === Collision helpers (SAT) ===
 function getAxes(vertices) {
     const axes = [];
     for (let i = 0; i < vertices.length; i++) {
@@ -139,15 +102,6 @@ function triangleRectSAT(triangleVerts, rect) {
     return true;
 }
 
-function getFrogVerticesWorld() {
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
-    return vertices.map(v => vec2(
-        v[0]*cosA - v[1]*sinA + currentOffset[0],
-        v[0]*sinA + v[1]*cosA + currentOffset[1]
-    ));
-}
-
 function checkCollision() {
     const frogVerts = getFrogVerticesWorld();
     for (let i = 0; i < carVertices.length; i++) {
@@ -157,13 +111,21 @@ function checkCollision() {
     return false;
 }
 
+// === Render Loop ===
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     drawRoad(gl, locColor, vPosition, locOffset, locAngle);
     drawCars(gl, vPosition, locColor, locOffset, locAngle);
 
-    // Animate frog
+    // Update points system
+    updatePoints(currentOffset[1]);
+
+    // Draw bars
+    drawPoints(gl, locColor, vPosition);
+
+
+    // Animate frog movement
     if (isMoving) {
         let t = (Date.now() - moveStartTime) / moveDuration;
         if (t >= 1.0) { t = 1.0; isMoving = false; }
@@ -171,29 +133,23 @@ function render() {
         currentOffset[1] += (targetOffset[1] - currentOffset[1]) * t;
     }
 
-    // Collision detection with SAT
+
     if (checkCollision()) {
         alert("Game Over!");
-        currentOffset = vec2(0.0, -0.8);
-        targetOffset = vec2(0.0, -0.8);
+
+        // Reset frog
+        currentOffset = vec2(0.0, -0.85);
+        targetOffset = vec2(0.0, -0.85);
         angle = 0.0;
+
+        // Reset points bars
+        topBarCount = topBarMax;    // refill top bar
+        bottomBarCount = 0;         // empty bottom bar
+        lastRow = 0;                // reset frog row tracker
     }
 
-    // Draw frog
-    gl.bindBuffer(gl.ARRAY_BUFFER, frogBuffer);
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-    gl.uniform2fv(locOffset, flatten(currentOffset));
-    gl.uniform1f(locAngle, angle);
-    gl.uniform4fv(locColor, flatten(color));
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    // Draw eyes
-    gl.bindBuffer(gl.ARRAY_BUFFER, eyeBuffer);
-    gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-    gl.uniform4fv(locColor, flatten(vec4(0,0,0,1)));
-    gl.drawArrays(gl.POINTS, 0, 2);
+    drawFrog(gl, vPosition, locColor, locOffset, locAngle);
 
     window.requestAnimFrame(render);
 }
