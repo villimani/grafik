@@ -1,6 +1,4 @@
-
-
-var topBarCount = 10;
+var topBarCount = 0;   
 var topBarMax   = 10;
 var lastRow     = 0;
 
@@ -9,8 +7,8 @@ function updatePoints(frogY) {
     const rowIndex = Math.floor((frogY + 1.0) / rowHeight);
 
     if (rowIndex >= roadRows - 1 && lastRow < roadRows - 1) {
-        if (topBarCount > 0) {
-            topBarCount--;
+        if (topBarCount < topBarMax) {
+            topBarCount++;  
 
             setTimeout(() => {
                 currentOffset = vec2(0.0, -0.85);
@@ -21,9 +19,9 @@ function updatePoints(frogY) {
         }
         lastRow = rowIndex;
 
-        if (topBarCount === 0) {
+        if (topBarCount === topBarMax) {
             alert("You win!");
-            topBarCount = topBarMax;
+            topBarCount = 0;   
             lastRow = 0;
         }
     }
@@ -33,21 +31,22 @@ function updatePoints(frogY) {
     }
 }
 
-
 function drawPoints(gl, locColor, vPosition) {
     const barHeight = 0.05;
     const barWidth  = 0.18;
+    const startX    = -0.95;
+    const startY    = 0.95;
 
     for (let i = 0; i < topBarCount; i++) {
         drawBarSegment(
             gl,
             locColor,
             vPosition,
-            -0.95 + i * (barWidth + 0.01),
-            0.95,
+            startX + i * (barWidth + 0.01),
+            startY,
             barWidth,
             barHeight,
-            vec4(0.6, 1.0, 0.6, 1.0) 
+            vec4(0.6, 1.0, 0.6, 1.0)
         );
     }
 }
