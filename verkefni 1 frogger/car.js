@@ -1,4 +1,4 @@
-// === Car setup ===
+
 var carBuffers = [];
 var carVertices = [];
 var carPositions = [];
@@ -7,12 +7,11 @@ var carLanes = [];
 var carColors = [];
 var secondCarCount = 0;
 
-// 4 preset car colors (as arrays, not vec4 objects)
 const carPalette = [
-    [0.0, 0.0, 1.0, 1.0],   // blue
-    [1.0, 0.0, 0.0, 1.0],   // red
-    [1.0, 0.84, 0.0, 1.0],  // yellow
-    [0.0, 0.6, 0.0, 1.0]    // green
+    [0.0, 0.0, 1.0, 1.0],   
+    [1.0, 0.0, 0.0, 1.0],  
+    [1.0, 0.84, 0.0, 1.0], 
+    [0.0, 0.6, 0.0, 1.0]    
 ];
 
 function initCars(gl) {
@@ -43,7 +42,7 @@ function initCars(gl) {
             return carPalette[index];
         }
 
-        // Right/left moving car
+ 
         const verts1 = [
             vec2(0.5, y0), vec2(1.0, y0), vec2(1.0, y1-0.05),
             vec2(0.5, y0), vec2(1.0, y1-0.05), vec2(0.5, y1-0.05)
@@ -59,7 +58,6 @@ function initCars(gl) {
         gl.bufferData(gl.ARRAY_BUFFER, flatten(verts1), gl.STATIC_DRAW);
         carBuffers.push(buf1);
 
-        // Optional second car
         if (secondCarCount < 2 && Math.random() < 0.5) {
             const verts2 = [
                 vec2(-1.0, y0), vec2(-0.5, y0), vec2(-0.5, y1-0.05),
@@ -80,7 +78,6 @@ function initCars(gl) {
     }
 }
 
-// Draw and move cars
 function drawCars(gl, vPosition, locColor, locOffset, locAngle) {
     gl.uniform1f(locAngle, 0.0);
 
@@ -100,7 +97,6 @@ function drawCars(gl, vPosition, locColor, locOffset, locAngle) {
     }
 }
 
-// Get bounding rectangle for a car
 function getCarBounds(i) {
     const verts = carVertices[i];
     const offset = carPositions[i];

@@ -22,7 +22,6 @@ window.onload = function init() {
     initRoad(gl);
     initCars(gl);
 
-    // Controls
     window.addEventListener("keydown", function(e) {
         if (isMoving) return;
 
@@ -54,7 +53,6 @@ window.onload = function init() {
     render();
 };
 
-// === Collision helpers (SAT) ===
 function getAxes(vertices) {
     const axes = [];
     for (let i = 0; i < vertices.length; i++) {
@@ -111,21 +109,18 @@ function checkCollision() {
     return false;
 }
 
-// === Render Loop ===
+
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     drawRoad(gl, locColor, vPosition, locOffset, locAngle);
     drawCars(gl, vPosition, locColor, locOffset, locAngle);
 
-    // Update points system
     updatePoints(currentOffset[1]);
 
-    // Draw bars
     drawPoints(gl, locColor, vPosition);
 
 
-    // Animate frog movement
     if (isMoving) {
         let t = (Date.now() - moveStartTime) / moveDuration;
         if (t >= 1.0) { t = 1.0; isMoving = false; }
@@ -137,15 +132,15 @@ function render() {
     if (checkCollision()) {
         alert("Game Over!");
 
-        // Reset frog
+
         currentOffset = vec2(0.0, -0.85);
         targetOffset = vec2(0.0, -0.85);
         angle = 0.0;
 
-        // Reset points bars
-        topBarCount = topBarMax;    // refill top bar
-        bottomBarCount = 0;         // empty bottom bar
-        lastRow = 0;                // reset frog row tracker
+
+        topBarCount = topBarMax;  
+        bottomBarCount = 0;         
+        lastRow = 0;               
     }
 
 

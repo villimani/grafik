@@ -1,9 +1,9 @@
-// Road settings
-var roadRows = 7;          // now 7 rows
-var rowHeight = 2.0 / roadRows;  // evenly divide screen height
-var lineHeight = 0.02;     // height of the white lane marking
-var dashWidth = 0.1;       // width of each dash
-var dashGap = 0.05;        // gap between dashes
+
+var roadRows = 7
+var rowHeight = 2.0 / roadRows;  
+var lineHeight = 0.02;     
+var dashWidth = 0.1;       
+var dashGap = 0.05;       
 
 var rowBuffers = [];
 var rowColors = [];
@@ -30,8 +30,8 @@ function initRoad(gl) {
         rowBuffers.push(buf);
 
         var color = (i === 0 || i === roadRows - 1)
-            ? vec4(0.55, 0.27, 0.07, 1.0)  // brown for edges
-            : vec4(0.6, 0.6, 0.6, 1.0);   // gray for road lanes
+            ? vec4(0.55, 0.27, 0.07, 1.0)  
+            : vec4(0.6, 0.6, 0.6, 1.0);  
         rowColors.push(color);
 
         if (i > 0 && i < roadRows - 1) {
@@ -80,7 +80,7 @@ function drawRoad(gl, locColor, vPosition, locOffset, locAngle) {
             gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(vPosition);
             gl.uniform4fv(locColor, flatten(vec4(1.0, 1.0, 1.0, 1.0)));
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, lineCounts[i]*4); // each dash = 4 vertices
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, lineCounts[i]*4); 
         }
     }
 
