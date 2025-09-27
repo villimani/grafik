@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Newton's Cradle Simulation</title>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        varying vec4 fColor;
+        uniform mat4 transform;
+        void main() {
+            fColor = vColor;
+            gl_Position = transform * vPosition;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 fColor;
+        void main() {
+            gl_FragColor = fColor;
+        }
+    </script>
+
+    <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MV.js"></script>
+    <script src="newton.js"></script>
+
+    <style>
+        body { margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background:#f0f0f0; }
+        canvas { box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body>
+    <canvas id="gl-canvas" width="700" height="500"></canvas>
+</body>
+</html>
