@@ -1,9 +1,4 @@
-/////////////////////////////////////////////////////////////////
-//    Sýnidæmi í Tölvugrafík
-//     Búum til bókstafinn H úr þremur teningum
-//
-//    Hjálmtýr Hafsteinsson, september 2025
-/////////////////////////////////////////////////////////////////
+
 var canvas;
 var gl;
 
@@ -12,7 +7,7 @@ var numVertices  = 36;
 var points = [];
 var colors = [];
 
-var movement = false;     // Do we rotate?
+var movement = false;     
 var spinX = 0;
 var spinY = 0;
 var origX;
@@ -34,9 +29,6 @@ window.onload = function init()
     
     gl.enable(gl.DEPTH_TEST);
 
-    //
-    //  Load shaders and initialize attribute buffers
-    //
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
     
@@ -58,12 +50,11 @@ window.onload = function init()
 
     matrixLoc = gl.getUniformLocation( program, "transform" );
 
-    //event listeners for mouse
     canvas.addEventListener("mousedown", function(e){
         movement = true;
         origX = e.offsetX;
         origY = e.offsetY;
-        e.preventDefault();         // Disable drag and drop
+        e.preventDefault();
     } );
 
     canvas.addEventListener("mouseup", function(e){
@@ -106,17 +97,17 @@ function quad(a, b, c, d)
     ];
 
     var vertexColors = [
-        [ 0.0, 0.0, 0.0, 1.0 ],  // black
-        [ 1.0, 0.0, 0.0, 1.0 ],  // red
-        [ 1.0, 1.0, 0.0, 1.0 ],  // yellow
-        [ 0.0, 1.0, 0.0, 1.0 ],  // green
-        [ 0.0, 0.0, 1.0, 1.0 ],  // blue
-        [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
-        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
-        [ 1.0, 1.0, 1.0, 1.0 ]   // white
+        [ 0.0, 0.0, 0.0, 1.0 ],  
+        [ 1.0, 0.0, 0.0, 1.0 ],  
+        [ 1.0, 1.0, 0.0, 1.0 ],  
+        [ 0.0, 1.0, 0.0, 1.0 ],  
+        [ 0.0, 0.0, 1.0, 1.0 ],  
+        [ 1.0, 0.0, 1.0, 1.0 ],  
+        [ 0.0, 1.0, 1.0, 1.0 ],  
+        [ 1.0, 1.0, 1.0, 1.0 ]   
     ];
 
-    //vertex color assigned by the index of the vertex
+    
     var indices = [ a, b, c, a, c, d ];
 
     for ( var i = 0; i < indices.length; ++i ) {
@@ -134,39 +125,34 @@ function render()
     mv = mult( mv, rotateX(spinX) );
     mv = mult( mv, rotateY(spinY) );
 
-    // ---- Rammann ----
-    // Vinstri hlið
+
     mv1 = mult( mv, translate(-0.45, 0.0, 0.0) );
     mv1 = mult( mv1, scalem(0.1, 1.0, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-    // Hægri hlið
     mv1 = mult( mv, translate(0.45, 0.0, 0.0) );
     mv1 = mult( mv1, scalem(0.1, 1.0, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-    // Efst
     mv1 = mult( mv, translate(0.0, 0.45, 0.0) );
     mv1 = mult( mv1, scalem(1.0, 0.1, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-    // Neðst
     mv1 = mult( mv, translate(0.0, -0.45, 0.0) );
     mv1 = mult( mv1, scalem(1.0, 0.1, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-    // ---- Hillurnar ----
-    // Lóðrétt skipting
+
     mv1 = mult( mv, translate(0.0, 0.0, 0.0) );
     mv1 = mult( mv1, scalem(0.1, 1.0, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-    // Lárétt skipting
+
     mv1 = mult( mv, translate(0.0, 0.0, 0.0) );
     mv1 = mult( mv1, scalem(1.0, 0.1, 0.5) );
     gl.uniformMatrix4fv(matrixLoc, false, flatten(mv1));

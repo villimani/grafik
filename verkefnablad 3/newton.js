@@ -1,7 +1,4 @@
-/////////////////////////////////////////////////////////////////
-// Newton's cradle simulation with 2 cubes
-// Perfect elastic collisions, continuous swing
-/////////////////////////////////////////////////////////////////
+
 
 var canvas;
 var gl;
@@ -12,18 +9,18 @@ var colors = [];
 
 var matrixLoc;
 
-// Visual parameters
-var massSize = 0.15;        // smaller cube
-var stringThickness = 0.03; // thinner string
-var pivotSep = massSize;     // cubes just touching
-var length = 0.8;            // string length
-var thetaMax = 45;           // swing amplitude in degrees
-var swingSpeed = 60;         // degrees per second
 
-// Pendulum state
-var movingCube = 0;           // 0 = left, 1 = right
-var theta = [-thetaMax, 0];   // left cube pulled left, right at rest
-var direction = [1, 0];       // left cube swings right-down first
+var massSize = 0.15;        
+var stringThickness = 0.03; 
+var pivotSep = massSize;    
+var length = 0.8;            
+var thetaMax = 45;           
+var swingSpeed = 60;         
+
+
+var movingCube = 0;           
+var theta = [-thetaMax, 0];   
+var direction = [1, 0];       
 
 var lastTime = null;
 
@@ -75,21 +72,20 @@ function colorCube() {
 
 function colorCube() {
     var faceColors = [
-        [1.0, 0.0, 0.0, 1.0], // front - red
-        [0.0, 1.0, 0.0, 1.0], // back - green
-        [0.0, 0.0, 1.0, 1.0], // top - blue
-        [1.0, 1.0, 0.0, 1.0], // bottom - yellow
-        [1.0, 0.0, 1.0, 1.0], // right - magenta
-        [0.0, 1.0, 1.0, 1.0]  // left - cyan
+        [1.0, 0.0, 0.0, 1.0], 
+        [0.0, 1.0, 0.0, 1.0],
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0, 1.0], 
+        [0.0, 1.0, 1.0, 1.0] 
     ];
 
-    // Each call draws a face with a different color
-    quad(1, 0, 3, 2, faceColors[0]); // front
-    quad(2, 3, 7, 6, faceColors[1]); // back
-    quad(3, 0, 4, 7, faceColors[2]); // top
-    quad(6, 5, 1, 2, faceColors[3]); // bottom
-    quad(4, 5, 6, 7, faceColors[4]); // right
-    quad(5, 4, 0, 1, faceColors[5]); // left
+    quad(1, 0, 3, 2, faceColors[0]); 
+    quad(2, 3, 7, 6, faceColors[1]); 
+    quad(3, 0, 4, 7, faceColors[2]);
+    quad(6, 5, 1, 2, faceColors[3]); 
+    quad(4, 5, 6, 7, faceColors[4]); 
+    quad(5, 4, 0, 1, faceColors[5]); 
 }
 
 function quad(a, b, c, d, faceColor) {
@@ -108,7 +104,7 @@ function quad(a, b, c, d, faceColor) {
 
     for (var i = 0; i < indices.length; ++i) {
         points.push(vertices[indices[i]]);
-        colors.push(faceColor); // use the specific color for this face
+        colors.push(faceColor); 
     }
 }
 
@@ -117,22 +113,17 @@ function physicsStep(dt) {
     var i = movingCube;
     var prevTheta = theta[i];
 
-    // Update moving cube
     theta[i] += swingSpeed * dt * direction[i];
 
-    // Check if cube crossed zero (center)
     if ((prevTheta < 0 && theta[i] >= 0) || (prevTheta > 0 && theta[i] <= 0)) {
         theta[i] = 0;
         direction[i] = 0;
 
-        // Switch moving cube
         movingCube = 1 - i;
 
-        // Start other cube moving in correct direction
         direction[movingCube] = (movingCube === 0) ? -1 : 1;
     }
 
-    // Reverse direction at maximum amplitude with overshoot correction
     for (var j = 0; j < 2; j++) {
         if (Math.abs(theta[j]) > thetaMax && direction[j] !== 0) {
             theta[j] = thetaMax * Math.sign(theta[j]) - (theta[j] - thetaMax * Math.sign(theta[j]));
@@ -151,19 +142,16 @@ function render() {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // --- Perspective projection ---
     var proj = perspective(60, canvas.width / canvas.height, 0.1, 10.0);
 
-    // --- Camera: centered, slightly above ---
     var camera = mult(
-        translate(0, 0.15, -2.5), // move scene slightly up and back
-        rotateX(15)                // look slightly downward
+        translate(0, 0.15, -2.5), 
+        rotateX(15)             
     );
 
     var strLen = length;
     var strCenter = -strLen / 2;
 
-    // LEFT cube string & mass
     var pivotLeftX = -pivotSep/2;
     var localLeft = mult(translate(pivotLeftX, 0.9, 0.0), rotateZ(theta[0]));
 
@@ -177,7 +165,6 @@ function render() {
     gl.uniformMatrix4fv(matrixLoc, false, flatten(massMat));
     gl.drawArrays(gl.TRIANGLES, 0, numVertices);
 
-    // RIGHT cube string & mass
     var pivotRightX = pivotSep/2;
     var localRight = mult(translate(pivotRightX, 0.9, 0.0), rotateZ(theta[1]));
 
