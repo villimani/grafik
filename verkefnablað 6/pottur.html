@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phong / Blinn-Phong Teapot</title>
+    <style>
+        body { background-color: #eef; font-family: sans-serif; }
+        #controls { margin: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <label for="modelSwitch"></label>
+    <select id="modelSwitch">
+        <option value="0">Phong</option>
+        <option value="1">Blinn-Phong</option>
+    </select>
+</div>
+
+<canvas id="gl-canvas" width="600" height="600"></canvas>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vNormal;
+varying vec3 N, L, E;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform mat3 normalMatrix;
+
+void main() {
+    vec3 pos = (modelViewMatrix * vPosition).xyz;
+    if(lightPosition.w == 0.0) L = normalize(lightPosition.xyz);
+    else L = normalize(lightPosition.xyz - pos);
+
+    E = -normalize(pos);
+    N = normalize(normalMatrix * vNormal.xyz);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+uniform int useBlinn; // 0 = Phong, 1 = Blinn-Phong
+varying vec3 N, L, E;
+
+void main() {
+    vec3 H;
+    if(useBlinn == 1) H = normalize(L + E);      // Blinn-Phong
+    else H = reflect(-L, N);                     // Phong
+
+    float Ks = pow(max(dot(N, H), 0.0), shininess);
+    vec4 specular = Ks * specularProduct;
+    if(dot(L,N) < 0.0) specular = vec4(0.0,0.0,0.0,1.0);
+
+    float Kd = max(dot(L, N), 0.0);
+    vec4 diffuse = Kd * diffuseProduct;
+    vec4 ambient = ambientProduct;
+
+    gl_FragColor = ambient + diffuse + specular;
+    gl_FragColor.a = 1.0;
+}
+</script>
+
+<script src="../Common/webgl-utils.js"></script>
+<script src="../Common/initShaders.js"></script>
+<script src="../Common/MV.js"></script>
+<script src="teapotData.js"></script>
+<script src="pottur.js"></script>
+
+</body>
+</html>
