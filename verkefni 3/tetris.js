@@ -2,11 +2,9 @@
 
 let gl, program, transformLoc;
 
-// Camera
 let angleX = 20, angleY = -30;
 let dragging = false, lastX, lastY;
 
-// Cube dimensions
 const WIDTH = 6, HEIGHT = 20, DEPTH = 6;
 const areaScale = 1.9;
 const SCALE = Math.max(WIDTH, HEIGHT, DEPTH);
@@ -15,41 +13,31 @@ const SCALE_Y = (HEIGHT / SCALE) * areaScale;
 const SCALE_Z = (DEPTH / SCALE) * areaScale;
 const centerX = SCALE_X / 2, centerY = SCALE_Y / 2, centerZ = SCALE_Z / 2;
 
-// Small cube
 const CELL_WIDTH = SCALE_X / WIDTH;
 const CELL_HEIGHT = SCALE_Y / HEIGHT;
 const CELL_DEPTH = SCALE_Z / DEPTH;
 
-// Grid to track landed cubes
 const grid = Array.from({length:WIDTH},()=>Array.from({length:HEIGHT},()=>Array.from({length:DEPTH},()=>null)));
 
-// Shapes
 const shapes = [
-    [{x:0,y:0,z:0},{x:1,y:0,z:0},{x:2,y:0,z:0}], // line
-    [{x:0,y:0,z:0},{x:1,y:0,z:0},{x:0,y:0,z:1}]  // L
+    [{x:0,y:0,z:0},{x:1,y:0,z:0},{x:2,y:0,z:0}], 
+    [{x:0,y:0,z:0},{x:1,y:0,z:0},{x:0,y:0,z:1}]  
 ];
 
-// Colors
 const colors = ["green","yellow","blue","red"];
 
-// Falling piece
 let fallingPiece = null;
 
-// Rotation control
 let lastRotateTime = 0;
 const rotateCooldown = 100;
 
-// Fall control
 let lastFallTime = 0;
 let fallInterval = 1000;
 
-// Score
 let score = 0;
 
-// NEW: Pause state
 let paused = false;
 
-// Main cube edges
 const vertices = [
     vec4(0-centerX,0-centerY,0-centerZ,1),
     vec4(SCALE_X-centerX,0-centerY,0-centerZ,1),
@@ -62,9 +50,7 @@ const vertices = [
 ];
 const edges = [0,1,1,2,2,3,3,0,4,5,5,6,6,7,7,4,0,4,1,5,2,6,3,7];
 
-// --------------------------------------------------
-// INIT
-// --------------------------------------------------
+
 window.onload = function init() {
     const canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
@@ -84,9 +70,7 @@ window.onload = function init() {
     requestAnimationFrame(animate);
 };
 
-// --------------------------------------------------
-// Controls
-// --------------------------------------------------
+
 function setupControls(){
     const canvas = document.getElementById("gl-canvas");
     canvas.addEventListener("mousedown",e=>{dragging=true; lastX=e.clientX; lastY=e.clientY;});
@@ -101,15 +85,12 @@ function setupControls(){
         }
     });
 
-    // -------------------------------
-    // KEYBOARD (blocked when paused)
-    // -------------------------------
+
     window.addEventListener("keydown", e=>{
-        if (paused) return;  // NEW: Disable input when paused
+        if (paused) return;  
         const now = Date.now();
         if(!fallingPiece) return;
 
-        // Movement
         switch(e.key){
             case "ArrowLeft": movePiece(-1,0); break;
             case "ArrowRight": movePiece(1,0); break;
@@ -124,7 +105,6 @@ function setupControls(){
         };
 
 
-        // Rotation with cooldown
         if(now - lastRotateTime < rotateCooldown) return;
         switch(e.key){
             case "a": rotatePiece('x'); break;
@@ -137,9 +117,6 @@ function setupControls(){
         lastRotateTime = now;
     });
 
-    // -------------------------------
-    // BUTTONS
-    // -------------------------------
     document.getElementById("pauseBtn").onclick = () => {
         paused = !paused;
         document.getElementById("pauseBtn").innerText = paused ? "Resume" : "Pause";
@@ -149,8 +126,6 @@ function setupControls(){
         restartGame();
     };
 
-    // Difficulty slider
-// Difficulty dropdown
     const diffSelect = document.getElementById("difficultySelect");
     diffSelect.addEventListener("change", () => {
         fallInterval = Number(diffSelect.value);
@@ -159,9 +134,7 @@ function setupControls(){
 
 }
 
-// --------------------------------------------------
-// Restart (NEW)
-// --------------------------------------------------
+
 function restartGame() {
     // Clear grid
     for (let x = 0; x < WIDTH; x++){
@@ -193,9 +166,7 @@ function hideGameOver() {
     document.getElementById("gameOverScreen").style.display = "none";
 }
 
-// --------------------------------------------------
-// Spawn new piece
-// --------------------------------------------------
+
 function spawnPiece(){
     const shape = JSON.parse(JSON.stringify(shapes[Math.random()<0.5?0:1]));
     const color = colors[Math.floor(Math.random()*colors.length)];
@@ -239,9 +210,6 @@ function dropOneLevel(){
     }
 }
 
-// --------------------------------------------------
-// Movement & rotation
-// --------------------------------------------------
 function movePiece(dx,dz){
     if(!fallingPiece || paused) return;
     if(fallingPiece.blocks.every(b=>{
@@ -286,16 +254,12 @@ function rotatePiece(axis){
     }
 }
 
-// --------------------------------------------------
-// Falling logic
-// --------------------------------------------------
 let previousTime=0;
 function animate(currentTime){
     currentTime=currentTime||0;
     const deltaTime=currentTime-previousTime;
     previousTime=currentTime;
 
-    // NEW: Pause stops falling
     if (!paused) {
         updateFalling(deltaTime);
     }
@@ -360,9 +324,7 @@ function clearFullLayers(){
     }
 }
 
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
+
 function colorNameToRGB(name){
     switch(name){
         case "red": return [1,0,0];
@@ -373,9 +335,7 @@ function colorNameToRGB(name){
     return [1,1,1];
 }
 
-// --------------------------------------------------
-// Rendering (unchanged except for pause support)
-// --------------------------------------------------
+
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -390,7 +350,6 @@ function render() {
     gl.uniformMatrix4fv(transformLoc, false, flatten(vp));
 
 
-    // TRIANGLES (landed cubes)
     const triVerts = [];
     const triColors = [];
 
@@ -436,7 +395,6 @@ function render() {
     gl.drawArrays(gl.TRIANGLES, 0, triVerts.length);
 
 
-    // LINES (everything else)
     const lineVerts = [];
     const lineColors = [];
 

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="utf-8" />
+  <title>HIspjald</title>
+
+  <style type="text/css">
+    canvas {
+      background: blue;
+    }
+  </style>
+
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute  vec4 vPosition;
+    attribute  vec2 vTexCoord;
+
+    varying vec2 fTexCoord;
+
+    uniform mat4 projection;
+    uniform mat4 modelview;
+
+    void main()
+    {
+        fTexCoord = vTexCoord;
+        gl_Position = projection * modelview * vPosition;
+    }
+  </script>
+
+  <!-- Fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+
+    varying vec2 fTexCoord;
+    uniform sampler2D texture;
+    uniform vec3 uColor;   // litur sem við stýrum með r/g/b
+
+    void main()
+    {
+        vec4 texColor = texture2D( texture, fTexCoord );
+        vec3 finalRGB = texColor.rgb * uColor;
+        gl_FragColor  = vec4( finalRGB, texColor.a );
+    }
+  </script>
+
+  <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+  <script type="text/javascript" src="../Common/initShaders.js"></script>
+  <script type="text/javascript" src="../Common/MV.js"></script>
+  <script type="text/javascript" src="HIspjald.js"></script>
+</head>
+<body>
+  <canvas id="gl-canvas" width="600" height="600">
+    Your browser does not support the HTML5 canvas element.
+  </canvas>
+
+  <img id="texImage" src="HI_Logo.jpg" hidden />
+</body>
+</html>
